@@ -1,4 +1,51 @@
 body {
     margin: 0;
     padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+    margin:auto;
+    width: 700px;
+    height: 800px;
+    padding: 30px;
+    background-color: rgba(128, 128, 128, 0.5);
+    overflow: hidden;
+}
+
+.navDisplay {
+    font-size: 25px;
+    height: 50px;
+    margin-top:20px;
+    padding-left: 25px;
+    padding-right:25px;
+}
+
+.navDisplay p{
+    margin: 0;
+}
+
+.bombDisplay {
+    float: left;
+}
+
+.timeDisplay {
+    float: right;
+}
+
+.playingField {
+    display: inline-grid;
+    background-color: lightgray;
+    gap: 2px;
+}
+
+.field {
+    width: 60px;
+    height: 60px;
+    margin: 1px;
+    background-color: whitesmoke;
+}
+
+.field p{
+    margin: 0;
 }

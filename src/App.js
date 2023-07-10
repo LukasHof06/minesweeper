@@ -1,5 +1,3 @@
-
-
 function main() {
     class Game {
         constructor(bombCount, maxPlayTime, width, height) {
@@ -39,6 +37,7 @@ function main() {
 
                 if (typeof this.playingField[bombY][bombX] === 'undefined') {
                     this.playingField[bombY][bombX] = new FieldInfo(true);
+                    console.log("B placed");
                 } else {
                     i = i - 1;
                 }
@@ -50,13 +49,13 @@ function main() {
         caculateIndicator() {
             for (var row = 0; row < this.height; row++) {
                 for (var column = 0; column < this.width; column++) {
+                    let countIndicator = 0;
                     if (typeof this.playingField[row][column] === 'undefined') {
                         let isLeft = column == 0;
                         let isTop = row == 0;
                         let isRight = column == this.width - 1;
                         let isBottom = row == this.height - 1;
-
-                        let countIndicator = 0;
+                        
 
                         if (isLeft) {
                             if (isTop) {
@@ -112,6 +111,7 @@ function main() {
                             countIndicator = this.countBombIfPresent(countIndicator, row + 1, column);
                             countIndicator = this.countBombIfPresent(countIndicator, row + 1, column + 1);
                         }
+
                         let currentField = new FieldInfo(false);
                         currentField.setIndicator(countIndicator);
                         this.playingField[row][column] = currentField;
@@ -121,23 +121,35 @@ function main() {
         }
 
         countBombIfPresent(indicator, row, column) {
-            if (typeof this.playingField[row][column] != 'undefined') {
+            if (typeof this.playingField[row][column] != 'undefined' && this.playingField[row][column].getBomb()) {
                 indicator++;
             }
             return indicator
         }
 
         createView() {
-            let container = document.getElementById('container');
+            document.getElementById('bombDisplay').innerHTML = this.bombCount;
+
+            let container = document.getElementById('playingField');
             for (var row = 0; row < this.height; row++) {
                 for (var column = 0; column < this.width; column++) {
-
                     let field = document.createElement('div');
-                    field.style.cssText = 'border:1px solid blue; width:20px; height:20px;';
-                    field.innerHTML = `<p>${this.playingField[row][column].getIndicator()}</p>`
+                    let indicator = this.playingField[row][column].getIndicator();
+                    let isBomb = this.playingField[row][column].getBomb();
+
+                    if(isBomb){
+                        field.innerHTML = `<p class="fieldContent">💣</p>`;
+                    }else{
+                        field.innerHTML = `<p class="fieldContent">${indicator}</p>`;
+                    }
+
+                    field.setAttribute('class', 'field');
+                    
                     container.appendChild(field);
                 }
             }
+
+            document.getElementById('playingField').style.gridTemplateColumns = "auto ".repeat(this.width);
         }
     }
 
@@ -147,7 +159,6 @@ function main() {
             this.hidden = true;
             this.indicator = 0;
 
-            this.test();
         }
 
         getIndicator() {
@@ -158,15 +169,15 @@ function main() {
             this.indicator = indicator;
         }
 
-        test() {
-            console.log(this.bomb);
+        getBomb() {
+            return this.bomb;
         }
     }
 
-    let bombCount = 50;
+    let bombCount = 10;
     let maxPlayTime = 999;
-    let width = 10;
-    let height = 10;
+    let width = 8;
+    let height = 8;
 
     const game = new Game(bombCount, maxPlayTime, width, height);
 }
