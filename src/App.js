@@ -176,7 +176,7 @@ function main() {
 
     let bombCount = 10;
     let maxPlayTime = 999;
-    let width = 8;
+    let width = 10;
     let height = 8;
 
     const game = new Game(bombCount, maxPlayTime, width, height);

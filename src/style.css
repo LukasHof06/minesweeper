@@ -2,12 +2,12 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
 }
 
 .container {
-    margin:auto;
-    width: 700px;
-    height: 800px;
+    margin: auto;
+    display: inline-block;
     padding: 30px;
     background-color: rgba(128, 128, 128, 0.5);
     overflow: hidden;
@@ -16,12 +16,13 @@ body {
 .navDisplay {
     font-size: 25px;
     height: 50px;
-    margin-top:20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     padding-left: 25px;
-    padding-right:25px;
+    padding-right: 25px;
 }
 
-.navDisplay p{
+.navDisplay p {
     margin: 0;
 }
 
@@ -44,8 +45,11 @@ body {
     height: 60px;
     margin: 1px;
     background-color: whitesmoke;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.field p{
+.field p {
     margin: 0;
 }
