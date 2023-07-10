@@ -53,3 +53,7 @@ body {
 .field p {
     margin: 0;
 }
+
+.field:hover {
+    background-color: rgb(230, 230, 230);
+}
