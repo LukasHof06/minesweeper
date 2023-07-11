@@ -11,10 +11,34 @@
 </head>
 
 <body onload="main();">
+    <div class="popupContainer" id="popupContainer">
+        <div class="popup" id="popup">
+            <h1>Minesweeper</h1>
+            <button class="startGame" id="startGame" onclick="startGame();">Spiel starten</button>
+        </div>
+    </div>
+
     <div class="container" id="container">
         <div class="navDisplay" id="navDisplay">
-            <div class="bombDisplay"><p>🚩 <span id="bombDisplay">00</span></p></div>
-            <div class="timeDisplay"><p>🕔 000</p></div>
+            <div class="bombDisplay">
+                <p>💣 <span id="bombDisplay">00</span></p>
+            </div>
+
+            <div class="flag">
+                <button id="flagButton" onclick="onClickFlag();">🚩</button>
+            </div>
+
+            <div class="difficultyLevel">
+                <select name="difficultyLevel" id="difficultyLevel">
+                    <option value="easy">Leicht</option>
+                    <option value="normal" selected>Normal</option>
+                    <option value="hard">Schwer</option>
+                </select>
+            </div>
+
+            <div class="timeDisplay">
+                <p>🕔 <span id="timeDisplay">000</span></p>
+            </div>
         </div>
         <div class="playingField" id="playingField"></div>
     </div>

@@ -1,7 +1,7 @@
-let bombCount = 10;
+let bombCount = 40;
 let maxPlayTime = 999;
-let width = 10;
-let height = 8;
+let width = 19;
+let height = 14;
 
 class Game {
     constructor(bombCount, maxPlayTime, width, height) {
@@ -42,7 +42,6 @@ class Game {
 
             if (typeof this.playingField[bombY][bombX] === 'undefined') {
                 this.playingField[bombY][bombX] = new FieldInfo(true);
-                console.log("B placed");
             } else {
                 i = i - 1;
             }
@@ -60,7 +59,6 @@ class Game {
                     let isTop = row == 0;
                     let isRight = column == this.width - 1;
                     let isBottom = row == this.height - 1;
-
 
                     if (isLeft) {
                         if (isTop) {
@@ -129,7 +127,7 @@ class Game {
         if (typeof this.playingField[row][column] != 'undefined' && this.playingField[row][column].getBomb()) {
             indicator++;
         }
-        return indicator
+        return indicator;
     }
 
     createView() {
@@ -140,31 +138,66 @@ class Game {
         for (var row = 0; row < this.height; row++) {
             for (var column = 0; column < this.width; column++) {
                 let field = document.createElement('div');
-                let indicator = this.playingField[row][column].getIndicator();
-                let isBomb = this.playingField[row][column].getBomb();
-                let isHidden = this.playingField[row][column].getHidden();
-
-                if (!isHidden) {
-                    if (isBomb) {
-                        field.innerHTML = `<p class="fieldContent">💣</p>`;
-                    } else {
-                        field.innerHTML = `<p class="fieldContent">${indicator}</p>`;
-                    }
-                }
+                this.drawField(this.playingField[row][column], field);
                 field.setAttribute('class', 'field');
+                field.setAttribute('id', `field_${row}-${column}`);
                 field.setAttribute('onclick', `onClick(${row}, ${column});`);
                 container.appendChild(field);
             }
         }
 
-        document.getElementById('playingField').style.gridTemplateColumns = "auto ".repeat(this.width);
+        document.getElementById('playingField').style.gridTemplateColumns = 'auto '.repeat(this.width);
     }
 
-    fieldClicked(row, column){
-        this.playingField[row][column].setHidden(false);
+    terminateGame() {
+        for (var row = 0; row < this.height; row++) {
+            for (var column = 0; column < this.width; column++) {
+                if (this.playingField[row][column].getBomb()) {
+                    this.playingField[row][column].setHidden(false);
+                }
+            }
+        }
         this.createView();
     }
+
+    fieldClicked(row, column) {
+        if (flagEnabled) {
+            let clickedField = document.getElementById(`field_${row}-${column}`)
+            if (clickedField.innerHTML == '') {
+                clickedField.innerHTML = '<p>🚩</p>';
+            } else if (clickedField.innerHTML == '<p>🚩</p>') {
+                clickedField.innerHTML = '';
+            }
+        } else {
+            this.playingField[row][column].setHidden(false);
+            if (this.playingField[row][column].getBomb()) {
+                this.terminateGame();
+            }
+        }
+
+        // this.createView();
+        let field = document.getElementById(`field_${row}-${column}`);
+        this.drawField(this.playingField[row][column], field);
+    }
+
+    drawField(fieldInfo, field) {
+        let indicator = fieldInfo.getIndicator();
+        let isBomb = fieldInfo.getBomb();
+        let isHidden = fieldInfo.getHidden();
+        if (!isHidden) {
+            if (isBomb) {
+                field.innerHTML = `<p class="fieldContent">💣</p>`;
+                field.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
+            } else {
+                field.innerHTML = `<p class="fieldContent">${indicator}</p>`;
+                field.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
+            }
+        }
+    }
 }
+
+
+
 class FieldInfo {
     constructor(bomb) {
         this.bomb = bomb;
@@ -189,19 +222,32 @@ class FieldInfo {
         return this.hidden;
     }
 
-    setHidden(bool){
-        this.hidden = bool;
+    setHidden(boolean) {
+        this.hidden = boolean;
     }
 }
 
-
 var game;
+var flagEnabled = false;
 
 function main() {
+
     game = new Game(bombCount, maxPlayTime, width, height);
 }
 
 function onClick(x, y) {
-    console.log(x, y)
-    game.fieldClicked(x, y)
+    game.fieldClicked(x, y);
+}
+
+function onClickFlag() {
+    if (!flagEnabled) {
+        flagEnabled = true;
+    } else if (flagEnabled) {
+        flagEnabled = false;
+    }
+}
+
+function startGame() {
+    let popupContainer = document.getElementById('popupContainer');
+    popupContainer.style.display = 'none';
 }
