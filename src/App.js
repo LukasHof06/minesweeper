@@ -1,7 +1,29 @@
 let bombCount = 40;
 let maxPlayTime = 999;
-let width = 19;
+let width = 18;
 let height = 14;
+
+function selectedDifficultyLevel() {
+    let selected = document.getElementById('difficultyLevel');
+    if (selected.value == 'dev-mode') {
+        width = 3;
+        height = 3;
+        bombCount = 1;
+    } else if (selected.value == 'easy') {
+        width = 10;
+        height = 8;
+        bombCount = 10;
+    } else if (selected.value == 'normal') {
+        width = 18;
+        height = 14;
+        bombCount = 40;
+    } else {
+        width = 24;
+        height = 20;
+        bombCount = 99;
+    }
+    game = new Game(bombCount, maxPlayTime, width, height);
+}
 
 class Game {
     constructor(bombCount, maxPlayTime, width, height) {
@@ -9,29 +31,31 @@ class Game {
         this.maxPlayTime = maxPlayTime;
         this.width = width;
         this.height = height;
+
         this.setup();
     }
 
     setup() {
+        this.gameOver = false;
+        this.flagIndicator = false;
+        this.resetUi();
+
+        this.initPlayingField();
+        this.placeBombs();
+        this.caculateIndicator();
+        this.showWholePlayingField();
+    }
+
+    initPlayingField() {
         this.playingField = new Array(this.height);
         for (let i = 0; i < this.height; i++) {
             this.playingField[i] = new Array(this.width);
         }
-
-        /* for (var row = 0; row < this.height; row++) {
-            for (var column = 0; column < this.width; column++) {
-                this.playingField[row][column] = row * this.width + column;
-            }
-        } */
-
-        this.placeBombs();
-        this.caculateIndicator();
-        this.createView();
     }
 
-
     placeBombs() {
-        if ((this.width * this.height) < bombCount) {
+        // Überprüfe eingabe parameter
+        if ((this.width * this.height) < this.bombCount) {
             console.error('Can\'t place all bombs due to field count.');
             return;
         }
@@ -40,20 +64,26 @@ class Game {
             let bombX = Math.floor(Math.random() * (this.width));
             let bombY = Math.floor(Math.random() * (this.height));
 
+            // Es können nicht zwei Bomben in einem feld liegen
             if (typeof this.playingField[bombY][bombX] === 'undefined') {
                 this.playingField[bombY][bombX] = new FieldInfo(true);
             } else {
                 i = i - 1;
             }
         }
-
-        console.log('All bombs placed!');
     }
 
+    /**
+     * Diese Methode berechnet den Indikator der die Anzahl der Bomben in der direkten Umgebung zählt.
+     * 
+     * [-] Beschreibt nicht vorhandene Felder (außerhalb des Spielfelds)
+     * [X] Die aktuelle Position
+     * [?] Die zu überprüfenden Felder.
+     */
     caculateIndicator() {
         for (var row = 0; row < this.height; row++) {
             for (var column = 0; column < this.width; column++) {
-                let countIndicator = 0;
+                let calculatedIndicator = 0;
                 if (typeof this.playingField[row][column] === 'undefined') {
                     let isLeft = column == 0;
                     let isTop = row == 0;
@@ -62,61 +92,64 @@ class Game {
 
                     if (isLeft) {
                         if (isTop) {
-                            countIndicator = this.countBombIfPresent(countIndicator, row, column + 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row + 1, column + 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row + 1, column);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column + 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column + 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column);
                         } else if (isBottom) {
-                            countIndicator = this.countBombIfPresent(countIndicator, row, column + 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row - 1, column + 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row - 1, column);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column + 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column + 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column);
                         } else {
-                            countIndicator = this.countBombIfPresent(countIndicator, row, column + 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row + 1, column + 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row + 1, column);
-                            countIndicator = this.countBombIfPresent(countIndicator, row - 1, column + 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row - 1, column);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column + 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column + 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column + 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column);
                         }
                     } else if (isRight) {
                         if (isTop) {
-                            countIndicator = this.countBombIfPresent(countIndicator, row, column - 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row + 1, column - 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row + 1, column);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column - 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column - 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column);
                         } else if (isBottom) {
-                            countIndicator = this.countBombIfPresent(countIndicator, row, column - 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row - 1, column - 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row - 1, column);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column - 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column - 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column);
                         } else {
-                            countIndicator = this.countBombIfPresent(countIndicator, row, column - 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row + 1, column - 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row + 1, column);
-                            countIndicator = this.countBombIfPresent(countIndicator, row - 1, column - 1);
-                            countIndicator = this.countBombIfPresent(countIndicator, row - 1, column);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column - 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column - 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column - 1);
+                            calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column);
                         }
                     } else if (isTop && !isLeft && !isRight) {
-                        countIndicator = this.countBombIfPresent(countIndicator, row, column - 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row, column + 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row + 1, column - 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row + 1, column);
-                        countIndicator = this.countBombIfPresent(countIndicator, row + 1, column + 1);
+                        // [-] [-] [-]
+                        // [?] [X] [?]
+                        // [?] [?] [?]
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column - 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column + 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column - 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column + 1);
                     } else if (isBottom && !isLeft && !isRight) {
-                        countIndicator = this.countBombIfPresent(countIndicator, row, column - 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row, column + 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row - 1, column - 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row - 1, column);
-                        countIndicator = this.countBombIfPresent(countIndicator, row - 1, column + 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column - 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column + 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column - 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column + 1);
                     } else {
-                        countIndicator = this.countBombIfPresent(countIndicator, row - 1, column - 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row - 1, column);
-                        countIndicator = this.countBombIfPresent(countIndicator, row - 1, column + 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row, column - 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row, column + 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row + 1, column - 1);
-                        countIndicator = this.countBombIfPresent(countIndicator, row + 1, column);
-                        countIndicator = this.countBombIfPresent(countIndicator, row + 1, column + 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column - 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row - 1, column + 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column - 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row, column + 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column - 1);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column);
+                        calculatedIndicator = this.countBombIfPresent(calculatedIndicator, row + 1, column + 1);
                     }
 
                     let currentField = new FieldInfo(false);
-                    currentField.setIndicator(countIndicator);
+                    currentField.setIndicator(calculatedIndicator);
                     this.playingField[row][column] = currentField;
                 }
             }
@@ -130,69 +163,122 @@ class Game {
         return indicator;
     }
 
-    createView() {
+    showWholePlayingField() {
         document.getElementById('playingField').innerHTML = '';
         document.getElementById('bombDisplay').innerHTML = this.bombCount;
 
-        let container = document.getElementById('playingField');
-        for (var row = 0; row < this.height; row++) {
-            for (var column = 0; column < this.width; column++) {
-                let field = document.createElement('div');
-                this.drawField(this.playingField[row][column], field);
-                field.setAttribute('class', 'field');
-                field.setAttribute('id', `field_${row}-${column}`);
-                field.setAttribute('onclick', `onClick(${row}, ${column});`);
-                container.appendChild(field);
+        let playingFieldView = document.getElementById('playingField');
+        for (let row = 0; row < this.height; row++) {
+            for (let column = 0; column < this.width; column++) {
+                let fieldView = document.createElement('div');
+                fieldView.setAttribute('class', 'field');
+                fieldView.setAttribute('id', `field_${row}-${column}`);
+                fieldView.setAttribute('onclick', `onClick(${row}, ${column});`);
+                this.fillField(this.playingField[row][column], fieldView);
+                playingFieldView.appendChild(fieldView);
             }
         }
 
         document.getElementById('playingField').style.gridTemplateColumns = 'auto '.repeat(this.width);
     }
 
-    terminateGame() {
-        for (var row = 0; row < this.height; row++) {
-            for (var column = 0; column < this.width; column++) {
+    fillField(fieldInfo, fieldView) {
+        let indicator = fieldInfo.getIndicator();
+
+        if (!fieldInfo.getHidden()) {
+            fieldView.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
+            if (fieldInfo.getBomb()) {
+                fieldView.innerHTML = `<p class="fieldContent">💣</p>`;
+            } else {
+                fieldView.innerHTML = `<p class="fieldContent" id="p_0${indicator}">${indicator}</p>`;
+            }
+        }
+    }
+
+    resetUi() {
+        document.getElementById('winner').style.display = 'none';
+        document.getElementById('lose').style.display = 'none';
+    }
+
+    showAllBombs() {
+        for (let row = 0; row < this.height; row++) {
+            for (let column = 0; column < this.width; column++) {
                 if (this.playingField[row][column].getBomb()) {
                     this.playingField[row][column].setHidden(false);
                 }
             }
         }
-        this.createView();
+        this.showWholePlayingField();
     }
 
     fieldClicked(row, column) {
-        if (flagEnabled) {
-            let clickedField = document.getElementById(`field_${row}-${column}`)
+
+        if (this.gameOver) {
+            return;
+        }
+        let clickedField = document.getElementById(`field_${row}-${column}`);
+        let clickedFieldInfo = this.playingField[row][column];
+
+        if (this.flagIndicator) {
             if (clickedField.innerHTML == '') {
                 clickedField.innerHTML = '<p>🚩</p>';
             } else if (clickedField.innerHTML == '<p>🚩</p>') {
                 clickedField.innerHTML = '';
             }
         } else {
-            this.playingField[row][column].setHidden(false);
-            if (this.playingField[row][column].getBomb()) {
-                this.terminateGame();
+            clickedFieldInfo.setHidden(false);
+            if (clickedFieldInfo.getBomb()) {
+
+                this.showAllBombs(row, column);
+                clickedField = document.getElementById(`field_${row}-${column}`);
+                clickedField.style.backgroundColor = 'red';
+                setTimeout(this.loseGame, 1500);
+                this.gameOver = true;
+                return;
             }
+
         }
 
-        // this.createView();
-        let field = document.getElementById(`field_${row}-${column}`);
-        this.drawField(this.playingField[row][column], field);
+        this.fillField(this.playingField[row][column], clickedField);
+
+        if (this.checkWinCondition()) {
+            this.winGame();
+        }
     }
 
-    drawField(fieldInfo, field) {
-        let indicator = fieldInfo.getIndicator();
-        let isBomb = fieldInfo.getBomb();
-        let isHidden = fieldInfo.getHidden();
-        if (!isHidden) {
-            if (isBomb) {
-                field.innerHTML = `<p class="fieldContent">💣</p>`;
-                field.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
-            } else {
-                field.innerHTML = `<p class="fieldContent">${indicator}</p>`;
-                field.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
+    loseGame() {
+        document.getElementById('popupContainer').style.display = 'block';
+        document.getElementById('lose').style.display = 'block';
+    }
+
+    winGame() {
+        document.getElementById('popupContainer').style.display = 'block';
+        document.getElementById('winner').style.display = 'block';
+        clearInterval(this.intervalId);
+    }
+
+    /**
+     * @returns gibt zurück ob wir gewonnen haben
+     */
+    checkWinCondition() {
+        for (let row = 0; row < this.height; row++) {
+            for (let column = 0; column < this.width; column++) {
+                let field = this.playingField[row][column];
+                // Prüft ob es noch ein verstecktes Zahlenfeld gibt
+                if (!field.getBomb() && field.getHidden()) {
+                    return false;
+                }
             }
         }
+        return true; // Gewonnen
+    }
+
+    setFlagIndicator(boolean) {
+        this.flagIndicator = boolean;
+    }
+
+    getFlagIndicator() {
+        return this.flagIndicator
     }
 }
 
@@ -227,11 +313,12 @@ class FieldInfo {
     }
 }
 
+
+
 var game;
-var flagEnabled = false;
 
 function main() {
-
+    document.getElementById('difficultyLevel').value = 'normal';
     game = new Game(bombCount, maxPlayTime, width, height);
 }
 
@@ -240,14 +327,20 @@ function onClick(x, y) {
 }
 
 function onClickFlag() {
-    if (!flagEnabled) {
-        flagEnabled = true;
-    } else if (flagEnabled) {
-        flagEnabled = false;
+    let flagIndicator = game.getFlagIndicator();
+    let flagBtn = document.getElementById('flagButton');
+    if (!flagIndicator) {
+        game.setFlagIndicator(true);
+        flagBtn.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
+        flagBtn.style.borderColor = 'black';
+    } else {
+        game.setFlagIndicator(false);
+        flagBtn.style.backgroundColor = '';
+        flagBtn.style.borderColor = '#676774';
     }
 }
 
 function startGame() {
-    let popupContainer = document.getElementById('popupContainer');
-    popupContainer.style.display = 'none';
+    document.getElementById('popupContainer').style.display = 'none';
+    game.setup();
 }

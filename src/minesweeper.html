@@ -14,6 +14,17 @@
     <div class="popupContainer" id="popupContainer">
         <div class="popup" id="popup">
             <h1>Minesweeper</h1>
+            <h2 id="winner" style="color: green; display: none;">Gewonnen!</h2>
+            <h2 id="lose" style="color: red; display: none;">Verloren!</h2>
+            <div class="difficultyLevel">
+                <label for="difficultyLevel">Schwierigkeitsgrad: </label>
+                <select name="difficultyLevel" id="difficultyLevel" onchange="selectedDifficultyLevel();">
+                    <option value="dev-mode">Entwickler-Modus</option>
+                    <option value="easy">Leicht</option>
+                    <option value="normal">Normal</option>
+                    <option value="hard">Schwer</option>
+                </select>
+            </div>
             <button class="startGame" id="startGame" onclick="startGame();">Spiel starten</button>
         </div>
     </div>
@@ -26,14 +37,6 @@
 
             <div class="flag">
                 <button id="flagButton" onclick="onClickFlag();">🚩</button>
-            </div>
-
-            <div class="difficultyLevel">
-                <select name="difficultyLevel" id="difficultyLevel">
-                    <option value="easy">Leicht</option>
-                    <option value="normal" selected>Normal</option>
-                    <option value="hard">Schwer</option>
-                </select>
             </div>
 
             <div class="timeDisplay">
