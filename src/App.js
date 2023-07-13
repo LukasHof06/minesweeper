@@ -183,14 +183,20 @@ class Game {
     }
 
     fillField(fieldInfo, fieldView) {
-        let indicator = fieldInfo.getIndicator();
+        if (fieldInfo.isFlagEnabled()) {
+            fieldView.innerHTML = '<p>🚩</p>';
+        } else {
+            let indicator = fieldInfo.getIndicator();
 
-        if (!fieldInfo.getHidden()) {
-            fieldView.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
-            if (fieldInfo.getBomb()) {
-                fieldView.innerHTML = `<p class="fieldContent">💣</p>`;
+            if (!fieldInfo.isHidden()) {
+                fieldView.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
+                if (fieldInfo.getBomb()) {
+                    fieldView.innerHTML = `<p class="fieldContent">💣</p>`;
+                } else {
+                    fieldView.innerHTML = `<p class="fieldContent" id="p_0${indicator}">${indicator}</p>`;
+                }
             } else {
-                fieldView.innerHTML = `<p class="fieldContent" id="p_0${indicator}">${indicator}</p>`;
+                fieldView.innerHTML = '';
             }
         }
     }
@@ -220,15 +226,14 @@ class Game {
         let clickedFieldInfo = this.playingField[row][column];
 
         if (this.flagIndicator) {
-            if (clickedField.innerHTML == '') {
-                clickedField.innerHTML = '<p>🚩</p>';
-            } else if (clickedField.innerHTML == '<p>🚩</p>') {
-                clickedField.innerHTML = '';
+            if (clickedFieldInfo.isFlagEnabled()) {
+                clickedFieldInfo.setFlag(false);
+            } else {
+                clickedFieldInfo.setFlag(true);
             }
-        } else {
+        } else if (!clickedFieldInfo.isFlagEnabled()) {
             clickedFieldInfo.setHidden(false);
             if (clickedFieldInfo.getBomb()) {
-
                 this.showAllBombs(row, column);
                 clickedField = document.getElementById(`field_${row}-${column}`);
                 clickedField.style.backgroundColor = 'red';
@@ -265,7 +270,7 @@ class Game {
             for (let column = 0; column < this.width; column++) {
                 let field = this.playingField[row][column];
                 // Prüft ob es noch ein verstecktes Zahlenfeld gibt
-                if (!field.getBomb() && field.getHidden()) {
+                if (!field.getBomb() && field.isHidden()) {
                     return false;
                 }
             }
@@ -287,9 +292,13 @@ class Game {
 class FieldInfo {
     constructor(bomb) {
         this.bomb = bomb;
-        this.hidden = true;
         this.indicator = 0;
+        this.flagEnabled = false;
+        this.hidden = true;
+    }
 
+    getBomb() {
+        return this.bomb;
     }
 
     getIndicator() {
@@ -300,11 +309,15 @@ class FieldInfo {
         this.indicator = indicator;
     }
 
-    getBomb() {
-        return this.bomb;
+    isFlagEnabled() {
+        return this.flagEnabled;
     }
 
-    getHidden() {
+    setFlag(boolean) {
+        this.flagEnabled = boolean;
+    }
+
+    isHidden() {
         return this.hidden;
     }
 
