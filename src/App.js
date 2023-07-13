@@ -31,18 +31,23 @@ class Game {
         this.maxPlayTime = maxPlayTime;
         this.width = width;
         this.height = height;
+        this.counter = 0;
+        this.timer = null;
 
         this.setup();
     }
 
     setup() {
         this.gameOver = false;
+        this.counter = 0;
         this.resetUi();
 
         this.initPlayingField();
         this.placeBombs();
         this.caculateIndicator();
         this.showWholePlayingField();
+
+        clearInterval(timer);
     }
 
     initPlayingField() {
@@ -232,6 +237,7 @@ class Game {
                 clickedField.style.backgroundColor = 'red';
                 setTimeout(this.loseGame, 1500);
                 this.gameOver = true;
+                clearInterval(this.timer);
                 return;
             }
 
@@ -241,6 +247,7 @@ class Game {
 
         if (this.checkWinCondition()) {
             this.winGame();
+            clearInterval(this.timer);
         }
     }
 
@@ -270,6 +277,7 @@ class Game {
         }
         return true; // Gewonnen
     }
+
 }
 
 class FieldInfo {
@@ -319,11 +327,12 @@ function main() {
 }
 
 function onClick(event, row, column) {
+    let clickedFieldInfo = game.playingField[row][column];
+
     if (event.which == 1) {
         game.fieldClicked(row, column);
-    } else if (event.which == 3) {
+    } else if (event.which == 3 && clickedFieldInfo.isHidden()) {
         let clickedField = document.getElementById(`field_${row}-${column}`);
-        let clickedFieldInfo = game.playingField[row][column];
 
         if (clickedFieldInfo.isFlagEnabled()) {
             clickedFieldInfo.setFlag(false);
@@ -337,4 +346,10 @@ function onClick(event, row, column) {
 function startGame() {
     document.getElementById('popupContainer').style.display = 'none';
     game.setup();
+    this.timer = setInterval(timer, 1000);
+}
+
+function timer() {
+    game.counter++;
+    document.getElementById('timeDisplay').innerHTML = game.counter.toString().padStart(3, "0");
 }
