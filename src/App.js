@@ -37,7 +37,6 @@ class Game {
 
     setup() {
         this.gameOver = false;
-        this.flagIndicator = false;
         this.resetUi();
 
         this.initPlayingField();
@@ -173,7 +172,7 @@ class Game {
                 let fieldView = document.createElement('div');
                 fieldView.setAttribute('class', 'field');
                 fieldView.setAttribute('id', `field_${row}-${column}`);
-                fieldView.setAttribute('onclick', `onClick(${row}, ${column});`);
+                fieldView.setAttribute('onmousedown', `onClick(event, ${row}, ${column});`);
                 this.fillField(this.playingField[row][column], fieldView);
                 playingFieldView.appendChild(fieldView);
             }
@@ -218,20 +217,14 @@ class Game {
     }
 
     fieldClicked(row, column) {
-
         if (this.gameOver) {
             return;
         }
+
         let clickedField = document.getElementById(`field_${row}-${column}`);
         let clickedFieldInfo = this.playingField[row][column];
 
-        if (this.flagIndicator) {
-            if (clickedFieldInfo.isFlagEnabled()) {
-                clickedFieldInfo.setFlag(false);
-            } else {
-                clickedFieldInfo.setFlag(true);
-            }
-        } else if (!clickedFieldInfo.isFlagEnabled()) {
+        if (!clickedFieldInfo.isFlagEnabled()) {
             clickedFieldInfo.setHidden(false);
             if (clickedFieldInfo.getBomb()) {
                 this.showAllBombs(row, column);
@@ -277,17 +270,7 @@ class Game {
         }
         return true; // Gewonnen
     }
-
-    setFlagIndicator(boolean) {
-        this.flagIndicator = boolean;
-    }
-
-    getFlagIndicator() {
-        return this.flagIndicator
-    }
 }
-
-
 
 class FieldInfo {
     constructor(bomb) {
@@ -335,21 +318,19 @@ function main() {
     game = new Game(bombCount, maxPlayTime, width, height);
 }
 
-function onClick(x, y) {
-    game.fieldClicked(x, y);
-}
+function onClick(event, row, column) {
+    if (event.which == 1) {
+        game.fieldClicked(row, column);
+    } else if (event.which == 3) {
+        let clickedField = document.getElementById(`field_${row}-${column}`);
+        let clickedFieldInfo = game.playingField[row][column];
 
-function onClickFlag() {
-    let flagIndicator = game.getFlagIndicator();
-    let flagBtn = document.getElementById('flagButton');
-    if (!flagIndicator) {
-        game.setFlagIndicator(true);
-        flagBtn.style.backgroundColor = 'rgba(128, 128, 128, 0.5)';
-        flagBtn.style.borderColor = 'black';
-    } else {
-        game.setFlagIndicator(false);
-        flagBtn.style.backgroundColor = '';
-        flagBtn.style.borderColor = '#676774';
+        if (clickedFieldInfo.isFlagEnabled()) {
+            clickedFieldInfo.setFlag(false);
+        } else {
+            clickedFieldInfo.setFlag(true);
+        }
+        game.fillField(game.playingField[row][column], clickedField);
     }
 }
 

@@ -10,7 +10,7 @@
     <script src="./App.js"></script>
 </head>
 
-<body onload="main();">
+<body onload="main();" oncontextmenu="return false;">
     <div class="popupContainer" id="popupContainer">
         <div class="popup" id="popup">
             <h1>Minesweeper</h1>
@@ -33,10 +33,6 @@
         <div class="navDisplay" id="navDisplay">
             <div class="bombDisplay">
                 <p>💣 <span id="bombDisplay">00</span></p>
-            </div>
-
-            <div class="flag">
-                <button id="flagButton" onclick="onClickFlag();">🚩</button>
             </div>
 
             <div class="timeDisplay">

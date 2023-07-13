@@ -22,7 +22,7 @@ body {
     padding-right: 25px;
     font-size: 25px;
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto;
 }
 
 .navDisplay p {
@@ -35,14 +35,6 @@ body {
 
 .timeDisplay {
     float: right;
-}
-
-#flagButton {
-    font-size: 17px;
-    width: 70px;
-    height: 35px;
-    border: 1px solid #676774;
-    border-radius: 5px;
 }
 
 .playingField {
@@ -147,8 +139,4 @@ body {
     height: 50px;
     border: 2px solid black;
     border-radius: 10px;
-}
-
-.test {
-    color: rgb(160, 160, 160);
 }
